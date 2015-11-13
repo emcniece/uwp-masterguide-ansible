@@ -1,0 +1,56 @@
+# common tasks :: Main server setup tasks
+---
+
+- name: Set Host Name
+  when: hostname != ''
+  hostname: name={{ hostname }}
+
+- name: Query External IP
+  uri: url="http://ipinfo.io/ip" return_content=yes
+  register: ip_addr_object
+  tags:
+    - ip_address
+
+- name: Clean External IP
+  set_fact: ip_addr="{{ ip_addr_object['content'] | regex_replace('\n', '') }}"
+  tags:
+    - ip_address
+
+- debug: msg="{{ ip_addr }}"
+  tags:
+    - ip_address
+
+- name: Set timezone
+  command: timedatectl set-timezone America/Vancouver
+
+- name: Install Packages
+  apt: pkg={{ item }} state=installed update_cache=true
+  with_items:
+  - ufw
+  - fail2ban
+  - unattended-upgrades
+  - unzip
+  - git
+  - makepasswd
+  tags: install
+
+- name: Update, Upgrade, Autoremove
+  command: "{{ item }}"
+  with_items:
+  - apt-get update -y
+  - apt-get upgrade -y
+  - apt-get autoremove -y
+  tags: install
+
+- name: Set Firewall Rules, Enable
+  ufw: state=enabled rule=allow port={{ item }}
+  with_items:
+  - ssh
+  - http
+  - 443/tcp
+
+- name: Enable fail2ban
+  command: service fail2ban start
+
+- name: Copy Unattended Upgrades Configuration
+  template: src=50unattended-upgrades dest=/etc/apt/apt.conf.d/50unattended-upgrades

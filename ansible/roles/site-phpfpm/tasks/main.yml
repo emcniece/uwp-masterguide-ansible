@@ -1,0 +1,14 @@
+# site-phpfpm :: New site PHP5-FPM setup
+---
+- set_fact: fpm_poolname={{ site_url | regex_replace( '\.', '_') | upper}}
+
+- name: Copy PHP5-FPM Site Configuration
+  template: src=site.com.conf dest=/etc/php5/fpm/pool.d/{{site_url}}.conf
+
+- name: Test PHP5-FPM
+  command: php5-fpm -t
+  notify: Reload PHP5-FPM
+
+- name: Test Nginx
+  command: nginx -t
+  notify: Reload Nginx

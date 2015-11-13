@@ -1,0 +1,36 @@
+# nginx tasks :: Main server Nginx installation
+---
+- name: Get System ulimit
+  shell: ulimit -n
+  register: ulimit_result
+
+- set_fact: ulimit={{ ulimit_result.stdout }}
+
+- name: Add Nginx Repository
+  apt_repository: repo='ppa:rtcamp/nginx' state=present
+  register: addrepo_nginx
+
+- name: Install Nginx
+  apt: pkg=nginx-custom state=installed update_cache=true
+  when: addrepo_nginx|success
+  register: installed_nginx
+  notify: Start Nginx
+  tags: install
+
+- name: Remove Active Site Defs
+  shell: rm -f /etc/nginx/sites-enabled/*
+
+- name: Remove Default Site Defs
+  shell: rm -f /etc/nginx/sites-available/*
+
+- name: Copy Nginx Configuration
+  template: src=nginx.conf dest=/etc/nginx/nginx.conf
+  notify: Reload Nginx
+
+- name: Create Web Root
+  file: path=/var/www mode=775 state=directory owner=www-data group=www-data
+  notify: Reload Nginx
+
+- name: Test Nginx Installation
+  command: nginx -t
+  notify: Restart Nginx

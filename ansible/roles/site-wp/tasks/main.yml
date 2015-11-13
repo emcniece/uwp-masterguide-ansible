@@ -1,0 +1,20 @@
+# site-wp tasks :: New site WP setup
+---
+
+- name: Download WordPress
+  when: use_wp == 'yes'
+  shell: wp core download --allow-root --path={{ webroot }}/{{ site_url }}/public
+
+- name: Configure WordPress
+  when: use_wp == 'yes'
+  
+#wp core config --dbname=limbicmedia_wp --dbuser=limbicmedia_wp --dbpass=password
+#wp core install --url=http://limbicmedia.ca --title='Limbic Media' --admin_user=limbic --admin_email=info@limbicmedia.ca --admin_password=password2
+
+- name: Install Plugins
+  when: install_plugins = 'yes'
+  shell: wp plugin install {{ item }}
+  with_items:
+  - nginx-helper
+  - redis-cache
+  - wpmandrill

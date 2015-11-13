@@ -1,0 +1,58 @@
+---
+- name: Install A New Site
+  hosts: testvm #10.0.0.161
+  #hosts: hometestvm
+
+  remote_user: emcniece
+  # remote_user: user
+  sudo: yes
+
+  vars_prompt:
+    - name: sysgroup
+      prompt: "System Group"
+      private: no
+      default: "google"
+    - name: sysuser
+      prompt: "System User"
+      private: no
+      default: "google"
+    - name: site_url
+      prompt: "Website URL"
+      default: google.com
+      private: no
+    #- name: db-name
+    #  prompt: "Database Name"
+    #  private: no
+    #- name: db-user
+    #  prompt: "Database User"
+    #  private: no
+    #- name: db-host
+    #  prompt: "Database Host"
+    #  default: "localhost"
+    #  private: no
+    #- name: db-pass
+    #  prompt: "Database Password"
+    #  private: no
+    - name: use_wp
+      prompt: "Use WordPress?"
+      default: "yes/no"
+      private: no
+    - name: install-plugins
+      prompt: "Install Plugins?"
+      default: "yes/no"
+      private: no
+    # - name: wp-user
+    #  prompt: "WP Username"
+    #  private: no
+    #- name: wp-pass
+    #  prompt: "WP Password"
+
+
+
+  roles:
+    - { role: site-common,  tags: ['site-common'] }
+    - { role: site-nginx,   tags: ['site-nginx'] }
+    - { role: site-phpfpm,  tags: ['site-phpfpm'] }
+    - { role: site-mysql,   tags: ['site-mysql'] }
+    - { role: site-wp,      tags: ['site-wp'] }
+    #- { role: wp-plugins,   tags: ['wp-plugins'] }

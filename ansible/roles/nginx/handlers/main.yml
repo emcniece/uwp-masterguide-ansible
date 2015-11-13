@@ -1,0 +1,13 @@
+---
+- name: Start Nginx
+  service: name=nginx state=started
+
+- name: Test Nginx
+  command: nginx -t
+  notify: Reload Nginx
+
+- name: Reload Nginx
+  service: name=nginx state=reloaded
+
+- name: Restart Nginx
+  service: name=nginx state=restarted

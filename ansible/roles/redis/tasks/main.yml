@@ -1,0 +1,22 @@
+---
+- name: Install Redis
+  apt: pkg={{ item }} state=installed update_cache=true
+  with_items:
+  - redis-server
+  - php5-redis
+  tags: install
+
+- name: Copy Redis Configuration
+  template: src=redis.conf dest=/etc/redis/redis.conf owner=redis group=root mode=0600
+  notify: Reload Nginx
+
+- name: Restrict Redis Library Mode
+  file: path=/var/lib/redis state=directory mode=0700
+
+- name: Restrict Firewall for Redis
+  ufw: rule=allow src={{ redis_bind }} to_port={{ redis_port }}
+
+# Should be a handler, but ufw task doesn't notify?
+- name: Restart Redis
+  service: name=redis-server state=restarted
+  notify: Restart PHP5-FPM

@@ -1,0 +1,4 @@
+# site-nginx handlers :: Redefinition of Nginx actions
+---
+- name: Reload Nginx
+  service: name=nginx state=reloaded

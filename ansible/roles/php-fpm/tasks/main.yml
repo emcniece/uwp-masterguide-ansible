@@ -1,0 +1,38 @@
+---
+- name: Add PHP5-FPM Repository
+  apt_repository: repo='ppa:ondrej/php5-5.6' state=present
+  register: addrepo_phpfpm
+
+- name: Install PHP5-FPM
+  apt: pkg={{ item }} state=installed update_cache=true
+  when: addrepo_phpfpm|success
+  with_items:
+  - php5-fpm
+  - php5-common
+  - php5-mysqlnd
+  - php5-xmlrpc
+  - php5-curl
+  - php5-gd
+  - php5-cli
+  - php-pear
+  - php5-dev
+  - php5-imap
+  - php5-mcrypt
+  register: installed_phpfpm
+  notify: Start PHP5-FPM
+  tags: install
+
+- name: Copy PHP5-FPM Configuration
+  template: src=www.conf dest=/etc/php5/fpm/pool.d/www.conf
+  notify: Reload PHP5-FPM
+
+- name: Copy PHP5-FPM php.ini
+  template: src=php.ini dest=/etc/php5/fpm/php.ini
+  notify: Enable PHP5 Opcache
+
+- name: Enable PHP5 Opcache
+  shell: php5enmod opcache
+
+- name: Test PHP5-FPM Installation
+  command: nginx -t
+  notify: Restart PHP5-FPM

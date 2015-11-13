@@ -1,0 +1,47 @@
+# a5shley-tasks tasks :: Main cron task setup
+---
+- name: Install WP Tasks
+  git: repo=https://github.com/A5hleyRich/simple-automated-tasks.git dest={{ tasks_dir }}
+  register: tasks_clone
+  tags: install
+
+- name: Relocate Tasks Folder
+  command: mv /tasks/.tasks {{ tasks_dir }}.tasks
+  when: tasks_clone
+  tags: install
+
+- name: Cleanup Files
+  file: path=/tasks state=absent
+
+- name: Enable Cron Task
+  when: tasks_cron
+  cron: name="a5hley_cron"
+        minute="*/5" hour="*"
+        user=root
+        cron_file={{ tasks_file }}
+        job="cd {{ tasks_dir }}.tasks; bash cron.sh > /dev/null 2>&1"
+
+- name: Enable Backup Task
+  when: tasks_backups
+  cron: name="a5hley_backup"
+        minute="0" hour="3"
+        user=root
+        cron_file={{ tasks_file }}
+        job="cd {{ tasks_dir }}.tasks; bash backups.sh > /dev/null 2>&1"
+
+- name: Enable Permissions Task
+  when: tasks_permissions
+  cron: name="a5hley_permissions"
+        minute="0" hour="4"
+        user=root
+        cron_file={{ tasks_file }}
+        job="cd {{ tasks_dir }}.tasks; bash permissions.sh > /dev/null 2>&1"
+
+- name: Enable Checksums Task
+  when: tasks_checksums
+  cron: name="a5hley_checksums"
+        minute="0" hour="5"
+        user=root
+        cron_file={{ tasks_file }}
+        job="cd {{ tasks_dir }}.tasks; bash checksums.sh > /dev/null 2>&1"
+

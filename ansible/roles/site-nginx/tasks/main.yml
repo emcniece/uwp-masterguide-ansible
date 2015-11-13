@@ -1,0 +1,25 @@
+# site-nginx tasks :: New site Nginx setup
+---
+- set_fact: fpm_poolname={{ site_url | regex_replace( '\.', '_') | upper}}
+
+- name: Create Directory Structure
+  when: site_url != ''
+  file: path={{ webroot }}/{{ site_url }}/{{ item }}
+        state=directory mode=0755
+        group={{ sysgroup }} owner={{ sysuser }}
+  with_items: site_dirs
+
+- name: Copy Nginx Site Configuration
+  when: use_wp == 'no'
+  template: src=site.com dest=/etc/nginx/sites-available/{{site_url}}
+
+- name: Copy Nginx WP Site Configuration
+  when: use_wp == 'yes'
+  template: src=wp-site.com dest=/etc/nginx/sites-available/{{site_url}}
+
+- name: Create Symlink
+  file: src=/etc/nginx/sites-available/{{ site_url }} dest=/etc/nginx/sites-enabled/{{ site_url }} state=link
+
+- name: Test Nginx
+  command: nginx -t
+  notify: Reload Nginx

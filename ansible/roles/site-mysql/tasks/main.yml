@@ -1,0 +1,28 @@
+# site-mysql tasks :: New site MySQL setup
+---
+
+- include_vars: "{{ webroot }}/{{ site_url }}/ansible_vars.json"
+- debug: msg="vars file {{ testicle }}"
+
+- set_fact: db_name={{ site_url | regex_replace('\..*$', '') | regex_replace('[^a-zA-Z0-9]', '_') | lower }}
+
+- set_fact: db_name={{ db_name }}_wp
+  when: use_wp == 'yes'
+
+#- debug: msg="db_name {{ db_name }}"
+
+- name: Create Database
+  mysql_db: name={{ db_name }} state=present
+            login_user={{ mysql_root_user }} login_password={{ mysql_root_pass }}
+
+- name: Create password
+  shell: makepasswd -chars 20
+  register: user_password
+
+#- name: Save Password to Vars File
+
+
+- name: Create User
+  mysql_user: name={{ db_name }} password={{ user_password.stdout }}
+              priv=*.*:ALL state=present
+              login_user={{ mysql_root_user }} login_password={{ mysql_root_pass }}

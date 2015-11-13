@@ -1,0 +1,18 @@
+---
+- name: Install MySQL, Nginx, and PHP-FPM for a WordPress Setup
+  #hosts: testvm #10.0.0.161
+  hosts: hometestvm #10.0.0.161
+
+  remote_user: emcniece
+  # remote_user: user
+  sudo: yes
+
+  roles:
+    - { role: common,       tags: ['common'] }
+    - { role: nginx,        tags: ['nginx'] }
+    - { role: php-fpm,      tags: ['php-fpm'] }
+    - { role: mysql,        tags: ['mysql'] }
+    - { role: newrelic,     tags: ['newrelic'] }
+    - { role: redis,        tags: ['redis'] }
+    - { role: wp-cli,       tags: ['wp-cli'] }
+    - { role: a5hley-tasks, tags: ['tasks'] }

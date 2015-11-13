@@ -1,0 +1,19 @@
+###
+ # https://github.com/A5hleyRich/simple-automated-tasks
+ # A great way to manage WP sites and their tasks!
+ #
+ # These variables may be overridden by the group_vars 'all' file.
+ # If tasks_file is specified, the cron jbos will be
+ #   generated in /etc/cron.d/{{ tasks_file }}
+###
+
+# Home installation directory (include trailing slash!)
+tasks_dir: /
+tasks_file: a5hley_cron
+
+# Set these to true or false to enable cron entries for each task file
+tasks_cron: true
+tasks_backups: true
+tasks_permissions: true
+tasks_checksums: true
+

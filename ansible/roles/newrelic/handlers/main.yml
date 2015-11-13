@@ -1,0 +1,3 @@
+---
+- name: Start New Relic
+  shell: /etc/init.d/newrelic-sysmond start

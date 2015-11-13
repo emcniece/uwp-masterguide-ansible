@@ -1,0 +1,19 @@
+# site-common tasks :: Main site setup common tasks
+---
+
+- name: Check for Variable File
+  stat: path="{{ webroot }}/{{ site_url }}/ansible-vars.json"
+  register: vars_exist
+
+- name: Install Variable File
+  template: src=ansible-vars.json dest={{ webroot }}/{{ site_url }}/ansible-vars.json
+  when: vars_exist.stat.exists == False
+
+- name: Add System Group
+  group: name={{ sysgroup }} state=present
+  when: sysgroup != ''
+
+- name: Add System User
+  user: name={{ sysuser }} group={{ sysgroup }}
+  when: sysuser != '' and sysgroup != ''
+

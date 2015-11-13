@@ -1,0 +1,3 @@
+---
+- name: Stop MySQL
+  service: name=mysql state=stopped
