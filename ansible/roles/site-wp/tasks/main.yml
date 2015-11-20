@@ -1,20 +1,67 @@
 # site-wp tasks :: New site WP setup
 ---
 
+# Tstamp used for Redis DB number
+- name: Generate Timestamp
+  shell: date +%s
+  register: tstamp
+
+- name: Is WordPress downloaded?
+  stat: path="{{ webroot }}/{{ site_url }}/public/index.php"
+  register: wp_present
+
+- name: WordPress Configured
+  stat: path="{{ webroot }}/{{ site_url }}/public/wp-config.php"
+  register: wp_configured
+
+#- debug: msg="wp download? {{wp_present}}"
+
 - name: Download WordPress
-  when: use_wp == 'yes'
+  when: use_wp == 'yes' and wp_present.stat.exists == False
   shell: wp core download --allow-root --path={{ webroot }}/{{ site_url }}/public
+  register: wp_downloaded
+
+- name: File Ready Test
+  when: wp_downloaded or wp_present.stat.exists == True
+  set_fact: system_ready=true
+
+- name: Read DB User
+  command: "cat {{ webroot }}/{{ site_url }}/ansible_db_user.json"
+  register: db_user
+
+- name: Read DB Pass
+  command: "cat {{ webroot }}/{{ site_url }}/ansible_db_pass.json"
+  register: db_pass
+
+#- debug: msg="db user? {{db_user.stdout}}"
+#- debug: msg="db pass? {{db_pass.stdout}}"
 
 - name: Configure WordPress
-  when: use_wp == 'yes'
-  
-#wp core config --dbname=limbicmedia_wp --dbuser=limbicmedia_wp --dbpass=password
-#wp core install --url=http://limbicmedia.ca --title='Limbic Media' --admin_user=limbic --admin_email=info@limbicmedia.ca --admin_password=password2
+  when: system_ready and wp_configured.stat.exists == False and db_user is defined and db_pass is defined
+  shell: wp core config --allow-root --path={{ webroot }}/{{ site_url }}/public --dbname={{db_user.stdout}} --dbuser={{db_user.stdout}} --dbpass={{db_pass.stdout}}
+
+- name: Install WordPress
+  when: system_ready and use_wp == 'yes'
+  shell: wp core install --allow-root --path={{ webroot }}/{{ site_url }}/public --url=http://{{site_url}} --title='{{site_url}}' --admin_user={{wp_user}} --admin_email={{wp_email}} --admin_password={{wp_pass}}
 
 - name: Install Plugins
-  when: install_plugins = 'yes'
-  shell: wp plugin install {{ item }}
+  when: system_ready and use_wp == 'yes'
+  shell: wp plugin install {{ item }} --allow-root --path={{ webroot }}/{{ site_url }}/public && wp plugin activate {{item}} --allow-root --path={{ webroot }}/{{ site_url }}/public
   with_items:
   - nginx-helper
   - redis-cache
   - wpmandrill
+
+- name: Update Permissions
+  command: chown -R {{sysuser}}:{{sysgroup}} {{ webroot }}/{{ site_url }}/public
+
+- name: Add WP Config Defines
+  when: system_ready and use_wp == 'yes'
+  lineinfile: dest="{{ webroot }}/{{ site_url }}/public/wp-config.php"
+    regexp="\<\?php"
+    insertafter="^<?php"
+    line="<?php \n\ndefine('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/');\ndefine('DISABLE_WP_CRON', true);\ndefine('WP_REDIS_DATABASE', {{tstamp.stdout}});\ndefine('WP_REDIS_PASSWORD', '{{redis_pass}}');"
+
+
+
+

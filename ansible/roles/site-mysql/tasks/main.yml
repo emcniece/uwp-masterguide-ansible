@@ -1,28 +1,62 @@
 # site-mysql tasks :: New site MySQL setup
 ---
 
-- include_vars: "{{ webroot }}/{{ site_url }}/ansible_vars.json"
-- debug: msg="vars file {{ testicle }}"
+###
+ # Todo: consider using a top-level ansible config file
+ # on remote host to store db vars between tasks
+###
+
+#- name: Detect Config File
+#  stat: path="{{ webroot }}/{{ site_url }}/ansible_vars.json"
+#  register: ansible_config_present
+
+#- name: Read Config File
+#  command: "cat {{ webroot }}/{{ site_url }}/ansible_vars.json"
+#  when: ansible_config_present.stat.exists == True
+#  register: rconfig
+
+#- debug: msg="remote config file {{ (rconfig.stdout | from_json) }}"
+#  when: (rconfig.stdout | from_json).testiclee is not defined
 
 - set_fact: db_name={{ site_url | regex_replace('\..*$', '') | regex_replace('[^a-zA-Z0-9]', '_') | lower }}
+  when: use_db == 'yes'
+
+- set_fact: db_name={{ db_name }}
+  when: use_db == 'yes' and use_wp == 'no'
 
 - set_fact: db_name={{ db_name }}_wp
   when: use_wp == 'yes'
 
-#- debug: msg="db_name {{ db_name }}"
-
 - name: Create Database
-  mysql_db: name={{ db_name }} state=present
-            login_user={{ mysql_root_user }} login_password={{ mysql_root_pass }}
+  when: use_db == 'yes'
+  mysql_db: name={{ db_name }}
+            state=present
+            login_user={{ mysql_root_user }}
+            login_password={{ mysql_root_pass }}
 
 - name: Create password
+  when: use_db == 'yes'
   shell: makepasswd -chars 20
-  register: user_password
+  register: db_pass
 
-#- name: Save Password to Vars File
+- name: Save Username to Vars File
+  when: use_db == 'yes'
+  shell: "echo '{{db_name}}' > {{ webroot }}/{{ site_url }}/ansible_db_user.json"
 
+- name: Save Password to Vars File
+  when: use_db == 'yes'
+  shell: "echo '{{db_pass.stdout}}' > {{ webroot }}/{{ site_url }}/ansible_db_pass.json"
 
 - name: Create User
-  mysql_user: name={{ db_name }} password={{ user_password.stdout }}
+  when: use_db == 'yes'
+  mysql_user: name={{ db_name }} password={{ db_pass.stdout }}
               priv=*.*:ALL state=present
               login_user={{ mysql_root_user }} login_password={{ mysql_root_pass }}
+
+
+- debug: msg="DB Username - {{db_name}}"
+  when: use_db == 'yes'
+- debug: msg="DB Password - {{db_pass.stdout}}"
+  when: use_db == 'yes'
+
+

@@ -1,7 +1,7 @@
 ---
 - name: Install A New Site
-  hosts: testvm #10.0.0.161
-  #hosts: hometestvm
+  #hosts: testvm #10.0.0.161
+  hosts: hometestvm
 
   remote_user: emcniece
   # remote_user: user
@@ -33,19 +33,28 @@
     #- name: db-pass
     #  prompt: "Database Password"
     #  private: no
+    - name: use_db
+      prompt: "Set up Database?"
+      default: "yes/no"
+      private: no
     - name: use_wp
       prompt: "Use WordPress?"
       default: "yes/no"
       private: no
-    - name: install-plugins
-      prompt: "Install Plugins?"
-      default: "yes/no"
-      private: no
-    # - name: wp-user
-    #  prompt: "WP Username"
+    #- name: install-plugins
+    #  prompt: "Install Plugins?"
+    #  default: "yes/no"
     #  private: no
-    #- name: wp-pass
-    #  prompt: "WP Password"
+    - name: wp_user
+      prompt: "WP Username"
+      default: "admin_google"
+      private: no
+    - name: wp_email
+      prompt: "WP Email Address"
+      default: "user@email.com"
+      private: no
+    - name: wp_pass
+      prompt: "WP Password"
 
 
 
