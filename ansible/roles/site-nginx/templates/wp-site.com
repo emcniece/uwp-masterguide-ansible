@@ -8,7 +8,7 @@ server {
     error_log {{ webroot }}/{{ site_url }}/logs/error.log;
 
     root {{ webroot }}/{{ site_url }}/public/;
-    index index.php;
+    index index.php index.html;
 
     set $skip_cache 0;
 
