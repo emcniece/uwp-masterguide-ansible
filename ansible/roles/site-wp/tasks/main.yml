@@ -32,15 +32,15 @@
   register: db_pass
 
 - name: Configure WordPress
-  when: system_ready and wp_configured.stat.exists == False and db_user is defined and db_pass is defined
+  when: use_wp == 'yes' and system_ready and wp_configured.stat.exists == False and db_user is defined and db_pass is defined
   shell: wp core config --allow-root --path={{ webroot }}/{{ site_url }}/public --dbname={{db_user.stdout}} --dbuser={{db_user.stdout}} --dbpass={{db_pass.stdout}}
 
 - name: Install WordPress
-  when: system_ready and use_wp == 'yes'
+  when: use_wp == 'yes' and system_ready
   shell: wp core install --allow-root --path={{ webroot }}/{{ site_url }}/public --url=http://{{site_url}} --title='{{site_url}}' --admin_user={{wp_user}} --admin_email={{wp_email}} --admin_password={{wp_pass}}
 
 - name: Install Plugins
-  when: system_ready and use_wp == 'yes'
+  when: use_wp == 'yes' and system_ready
   shell: wp plugin install {{ item }} --allow-root --path={{ webroot }}/{{ site_url }}/public && wp plugin activate {{item}} --allow-root --path={{ webroot }}/{{ site_url }}/public
   with_items:
   - nginx-helper
@@ -48,19 +48,15 @@
   - wpmandrill
 
 - name: Update Permissions
+  when: use_wp == 'yes'
   command: chown -R {{sysuser}}:{{sysgroup}} {{ webroot }}/{{ site_url }}/public
 
 - name: Add WP Config Defines
-  when: system_ready and use_wp == 'yes'
+  when: use_wp == 'yes' and system_ready
   lineinfile: dest="{{ webroot }}/{{ site_url }}/public/wp-config.php"
     regexp="\<\?php"
     insertafter="^<?php"
-    line="<?php 
-
-define('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/');
-define('DISABLE_WP_CRON', true);
-define('WP_REDIS_DATABASE', {{tstamp.stdout}});
-define('WP_REDIS_PASSWORD', '{{redis_pass}}');"
+    line="<?php define('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/'); define('DISABLE_WP_CRON', true); define('WP_REDIS_DATABASE', {{tstamp.stdout}}); define('WP_REDIS_PASSWORD', '{{redis_pass}}');"
 
 
 

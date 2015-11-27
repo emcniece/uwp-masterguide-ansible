@@ -10,7 +10,7 @@
   with_items: site_dirs
 
 - name: Copy Nginx Site Configuration
-  when: use_wp == 'no'
+  when: use_wp != 'yes'
   template: src=site.com dest=/etc/nginx/sites-available/{{site_url}}
 
 - name: Copy Nginx WP Site Configuration
