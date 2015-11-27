@@ -41,3 +41,12 @@ Roles denoted with `site-*` are executed under this task set:
 - site-nginx
 - site-phpfpm
 - site-wp
+
+This script can be installed and run localhost! Edit `/etc/ansible/hosts` and add an entry:
+
+    localhost ansible_connection=local
+
+... and then execute as so:
+
+    ansible-playbook helloworld.yml
+

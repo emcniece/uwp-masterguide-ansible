@@ -32,6 +32,7 @@
   - unzip
   - git
   - makepasswd
+  - openssh-server
   tags: install
 
 - name: Update, Upgrade, Autoremove

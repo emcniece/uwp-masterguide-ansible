@@ -14,8 +14,6 @@
   stat: path="{{ webroot }}/{{ site_url }}/public/wp-config.php"
   register: wp_configured
 
-#- debug: msg="wp download? {{wp_present}}"
-
 - name: Download WordPress
   when: use_wp == 'yes' and wp_present.stat.exists == False
   shell: wp core download --allow-root --path={{ webroot }}/{{ site_url }}/public
@@ -32,9 +30,6 @@
 - name: Read DB Pass
   command: "cat {{ webroot }}/{{ site_url }}/ansible_db_pass.json"
   register: db_pass
-
-#- debug: msg="db user? {{db_user.stdout}}"
-#- debug: msg="db pass? {{db_pass.stdout}}"
 
 - name: Configure WordPress
   when: system_ready and wp_configured.stat.exists == False and db_user is defined and db_pass is defined
@@ -60,7 +55,12 @@
   lineinfile: dest="{{ webroot }}/{{ site_url }}/public/wp-config.php"
     regexp="\<\?php"
     insertafter="^<?php"
-    line="<?php \n\ndefine('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/');\ndefine('DISABLE_WP_CRON', true);\ndefine('WP_REDIS_DATABASE', {{tstamp.stdout}});\ndefine('WP_REDIS_PASSWORD', '{{redis_pass}}');"
+    line="<?php 
+
+define('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/');
+define('DISABLE_WP_CRON', true);
+define('WP_REDIS_DATABASE', {{tstamp.stdout}});
+define('WP_REDIS_PASSWORD', '{{redis_pass}}');"
 
 
 

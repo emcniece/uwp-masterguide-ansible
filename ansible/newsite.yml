@@ -1,9 +1,7 @@
 ---
 - name: Install A New Site
-  #hosts: testvm #10.0.0.161
-  hosts: hometestvm
+  hosts: all
 
-  remote_user: emcniece
   # remote_user: user
   sudo: yes
 
@@ -20,19 +18,6 @@
       prompt: "Website URL"
       default: google.com
       private: no
-    #- name: db-name
-    #  prompt: "Database Name"
-    #  private: no
-    #- name: db-user
-    #  prompt: "Database User"
-    #  private: no
-    #- name: db-host
-    #  prompt: "Database Host"
-    #  default: "localhost"
-    #  private: no
-    #- name: db-pass
-    #  prompt: "Database Password"
-    #  private: no
     - name: use_db
       prompt: "Set up Database?"
       default: "yes/no"
