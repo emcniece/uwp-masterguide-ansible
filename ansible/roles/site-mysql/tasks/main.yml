@@ -18,7 +18,7 @@
 #- debug: msg="remote config file {{ (rconfig.stdout | from_json) }}"
 #  when: (rconfig.stdout | from_json).testiclee is not defined
 
-- set_fact: db_name={{ site_url | regex_replace('\..*$', '') | regex_replace('[^a-zA-Z0-9]', '_') | lower }}
+- set_fact: db_name={{ site_url | regex_replace('\..*$', '') | regex_replace('[^a-zA-Z0-9]', '_') | lower | truncate(12) }}
   when: use_db == 'yes'
 
 - set_fact: db_name={{ db_name }}
