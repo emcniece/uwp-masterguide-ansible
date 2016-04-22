@@ -6,6 +6,14 @@
   shell: date +%s
   register: tstamp
 
+# Get next Redis db number
+- name: Get Redis DB number
+  shell: bash redis_db_num.sh
+  args:
+    chdir: "{{ playbookroot }}"
+    executable: /bin/bash
+  register: redis_dbnum
+
 - name: Is WordPress downloaded?
   stat: path="{{ webroot }}/{{ site_url }}/public/index.php"
   register: wp_present
@@ -45,19 +53,15 @@
   with_items:
   - nginx-helper
   - redis-cache
-  - wpmandrill
+  - mailgun
 
 - name: Update Permissions
   when: use_wp == 'yes'
-  command: chown -R {{sysuser}}:{{sysgroup}} {{ webroot }}/{{ site_url }}/public
+  command: chown -R {{sysgroup}}:{{sysgroup}} {{ webroot }}/{{ site_url }}/public
 
 - name: Add WP Config Defines
   when: use_wp == 'yes' and system_ready
   lineinfile: dest="{{ webroot }}/{{ site_url }}/public/wp-config.php"
     regexp="\<\?php"
     insertafter="^<?php"
-    line="<?php define('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/'); define('DISABLE_WP_CRON', true); define('WP_REDIS_DATABASE', {{tstamp.stdout}}); define('WP_REDIS_PASSWORD', '{{redis_pass}}');"
-
-
-
-
+    line="<?php define('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/'); define('DISABLE_WP_CRON', true); define('WP_REDIS_DATABASE', {{redis_dbnum.stdout}}); define('WP_REDIS_PASSWORD', '{{redis_pass}}');"

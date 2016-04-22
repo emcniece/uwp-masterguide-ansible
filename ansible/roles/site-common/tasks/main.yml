@@ -14,6 +14,6 @@
   when: sysgroup != ''
 
 - name: Add System User
-  user: name={{ sysuser }} group={{ sysgroup }}
-  when: sysuser != '' and sysgroup != ''
+  user: name={{ sysgroup }} group={{ sysgroup }}
+  when: sysgroup != ''
 

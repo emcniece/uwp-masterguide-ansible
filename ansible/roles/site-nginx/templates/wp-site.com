@@ -1,7 +1,13 @@
 fastcgi_cache_path {{ webroot }}/{{ site_url }}/cache levels=1:2 keys_zone={{ fpm_poolname }}:100m inactive=60m;
 
-server {
+#server {
+#    listen 443;
+#    server_name {{ site_url }};
+#    rewrite ^(.*) http://$host$1 permanent;
+#}
 
+server {
+    listen 80;
     server_name {{ site_url }} www.{{ site_url }};
 
     access_log {{ webroot }}/{{ site_url }}/logs/access.log;
@@ -28,6 +34,21 @@ server {
     # Don’t use the cache for logged in users or recent commenters
     if ($http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in") {
         set $skip_cache 1;
+    }
+
+    # Deny referal spam
+    if ( $http_referer ~* (jewelry|viagra|nude|girl|nudit|casino|poker|porn|sex|teen|babes) ) {
+        return 403;
+    }
+
+    # Block some nasty robots
+    if ($http_user_agent ~ (msnbot|Purebot|Baiduspider|Lipperhey|Mail.Ru|scrapbot) ) {
+        return 403;
+    }
+
+    # Block download agenta
+    if ($http_user_agent ~* LWP::Simple|wget|libwww-perl) {
+        return 403;
     }
 
     # Prevent uploads PHP execution

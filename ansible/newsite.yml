@@ -7,7 +7,7 @@
 
   vars_prompt:
     - name: sysgroup
-      prompt: "System Group"
+      prompt: "System Group and User (same name)"
       private: no
       default: "google"
     - name: sysuser
