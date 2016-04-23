@@ -6,11 +6,8 @@
   with_items:
   - mysql-server
   - python-mysqldb
+  - libmysqlclient-dev
   tags: install
-
-# Needed?
-#- name: Initialize MySQL
-#  command: mysql_install_db
 
 - name: delete anonymous MySQL server user for localhost
   action: mysql_user user="" host="localhost" state="absent"

@@ -1,0 +1,33 @@
+# site-mailgun tasks :: Mailgun domain setup
+---
+
+- name: Create Mailgun domain
+  uri:
+    url: "{{mailgun_api_base}}/domains"
+    method: POST
+    user: api
+    password: "{{mailgun_api_key}}"
+    body: "name={{site_url}}"
+    force_basic_auth: yes
+    HEADER_Content-Type: "application/x-www-form-urlencoded"
+    return_content: yes
+    status_code: 200,400
+  register: mailgun_domain
+  when: use_mailgun == 'yes'
+
+- name: Get Mailgun domain
+  uri:
+    url: "{{mailgun_api_base}}/domains/{{site_url}}"
+    method: GET
+    user: api
+    password: "{{mailgun_api_key}}"
+    force_basic_auth: yes
+    HEADER_Content-Type: "application/x-www-form-urlencoded"
+    return_content: yes
+    status_code: 200,400
+  register: mailgun_domain
+  when: use_mailgun == 'yes' and mailgun_domain.status == 400 and mailgun_domain.json.message == "This domain name is already taken"
+
+- name: Get Mailgun DNS records
+  set_fact: mailgun_dns_records={{ mailgun_domain.json.sending_dns_records }}
+  when:  use_mailgun == 'yes' and mailgun_domain.json.sending_dns_records is defined

@@ -90,6 +90,6 @@ server {
     }
 
     location ~ /purge(/.*) {
-        fastcgi_cache_purge {{ fpm_poolname }} "$scheme$request_method$host$1";
+       #fastcgi_cache_purge {{ fpm_poolname }} "$scheme$request_method$host$1";
     }
 }

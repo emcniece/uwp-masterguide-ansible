@@ -9,6 +9,10 @@
 #  template: src=ansible-vars.json dest={{ webroot }}/{{ site_url }}/ansible-vars.json
 #  when: vars_exist.stat.exists == False
 
+- name: Generate System User/Group name
+  set_fact: sysgroup={{ site_url | regex_replace('\W', '_') | lower }}
+  when: site_url is defined
+
 - name: Add System Group
   group: name={{ sysgroup }} state=present
   when: sysgroup != ''

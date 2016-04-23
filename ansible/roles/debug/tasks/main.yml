@@ -1,0 +1,5 @@
+# debug tasks :: Testing area
+---
+
+- debug: msg="msg is {{ site_url | regex_replace('\W', '_') | lower }}"
+
