@@ -9,22 +9,45 @@
   - libmysqlclient-dev
   tags: install
 
-- name: delete anonymous MySQL server user for localhost
-  action: mysql_user user="" host="localhost" state="absent"
-
-- name: delete empty MySQL server user for localhost
-  action: mysql_user user="" state="absent"
-
-- name: remove the MySQL test database
-  action: mysql_db db=test state=absent
+- name: Create Symlink
+  file: src="/etc/mysql/my.cnf" dest="/root/.my.cnf" state=link force=yes
 
 # 'localhost' needs to be the last item for idempotency, see
 # http://ansible.cc/docs/modules.html#mysql-user
 - name: Change root user password on first run
-  mysql_user: login_user=root
-              login_password=''
-              name=root
-              password={{ mysql_root_pass }}
+  mysql_user: login_user="{{ mysql_root_user }}"
+              login_password="{{ mysql_root_pass }}"
+              name="{{ mysql_root_user }}"
+              password="{{ mysql_root_pass }}"
+              priv=*.*:ALL,GRANT
+              host={{ item }}
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+- name: delete anonymous MySQL server user for localhost
+  action: mysql_user user="" host="localhost" state="absent"
+          login_user="{{ mysql_root_user }}"
+          login_password="{{ mysql_root_pass }}"
+
+- name: delete empty MySQL server user for localhost
+  action: mysql_user user="" state="absent"
+          login_user="{{ mysql_root_user }}"
+          login_password="{{ mysql_root_pass }}"
+
+- name: remove the MySQL test database
+  action: mysql_db db=test state=absent
+          login_user="{{ mysql_root_user }}"
+          login_password="{{ mysql_root_pass }}"
+
+# 'localhost' needs to be the last item for idempotency, see
+# http://ansible.cc/docs/modules.html#mysql-user
+- name: Change root user password on first run
+  mysql_user: login_user="{{ mysql_root_user }}"
+              login_password="{{ mysql_root_pass }}"
+              name="{{ mysql_root_user }}"
+              password="{{ mysql_root_pass }}"
               priv=*.*:ALL,GRANT
               host={{ item }}
   with_items:

@@ -1,15 +1,21 @@
 ---
-- name: Add New Relic Repositories
-  command: echo deb http://apt.newrelic.com/debian/ newrelic non-free >> /etc/apt/sources.list.d/newrelic.list
-  register: added_nr_repo
+#- name: Add New Relic Repositories
+#  command: echo deb http://apt.newrelic.com/debian/ newrelic non-free >> /etc/apt/sources.list.d/newrelic.list
+#  register: added_nr_repo
 
 - name: Add New Relic Keyserver
-  apt_key: url=https://download.newrelic.com/548C16BF.gpg state=present
-  when: added_nr_repo|success
+  #apt_key: url=https://download.newrelic.com/548C16BF.gpg state=present
+  shell: "{{ playbookroot }}/install_newrelic.sh"
+  args:
+    executable: /bin/bash
+  #when: added_nr_repo|success
   register: added_nr_keyserv
 
+#- name: Update Packages
+#  apt: update_cache=yes
+
 - name: Install New Relic
-  apt: pkg=newrelic-sysmond state=installed update_cache=true
+  apt: name=newrelic-sysmond state=installed update_cache=yes
   when: added_nr_keyserv|success
   tags: install
 

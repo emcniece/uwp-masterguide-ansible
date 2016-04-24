@@ -22,6 +22,7 @@ site_dirs:
   - cache
 
 # A5shley Tasks
+tasks_dir: /.tasks
 tasks_cron: true
 tasks_backups: true
 tasks_permissions: true
