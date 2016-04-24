@@ -48,7 +48,9 @@
   with_items:
   - ssh
   - http
-  - 443/tcp
+
+- name: Allow SSH traffic
+  ufw: state=enabled rule=allow port=443 proto=tcp
 
 - name: Enable fail2ban
   command: service fail2ban start
