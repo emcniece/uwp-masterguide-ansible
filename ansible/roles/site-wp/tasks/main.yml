@@ -1,11 +1,6 @@
 # site-wp tasks :: New site WP setup
 ---
 
-# Tstamp used for Redis DB number
-- name: Generate Timestamp
-  shell: date +%s
-  register: tstamp
-
 # Get next Redis db number
 - name: Get Redis DB number
   shell: bash redis_db_num.sh
@@ -22,9 +17,18 @@
   stat: path="{{ webroot }}/{{ site_url }}/public/wp-config.php"
   register: wp_configured
 
+- name: Create Directory Structure
+  when: site_url != ''
+  file: path="{{ webroot }}/{{ site_url }}/{{ item }}"
+        state=directory mode=0755
+        group="{{ sysgroup }} owner={{ sysgroup }}"
+  with_items: site_dirs
+
 - name: Download WordPress
   when: use_wp == 'yes' and wp_present.stat.exists == False
-  shell: wp core download --allow-root --path={{ webroot }}/{{ site_url }}/public
+  shell: wp core download --allow-root --path="{{ webroot }}/{{ site_url }}/public"
+  args:
+    executable: /bin/bash
   register: wp_downloaded
 
 - name: File Ready Test
@@ -41,27 +45,50 @@
 
 - name: Configure WordPress
   when: use_wp == 'yes' and system_ready and wp_configured.stat.exists == False and db_user is defined and db_pass is defined
-  shell: wp core config --allow-root --path={{ webroot }}/{{ site_url }}/public --dbname={{db_user.stdout}} --dbuser={{db_user.stdout}} --dbpass={{db_pass.stdout}}
+  shell: wp core config --allow-root --path="{{ webroot }}/{{ site_url }}/public" --dbname="{{db_user.stdout}}" --dbuser="{{db_user.stdout}}" --dbpass="{{db_pass.stdout}}"
 
 - name: Install WordPress
   when: use_wp == 'yes' and system_ready
-  shell: wp core install --allow-root --path={{ webroot }}/{{ site_url }}/public --url=http://{{site_url}} --title='{{site_url}}' --admin_user={{wp_user}} --admin_email={{wp_email}} --admin_password={{wp_pass}}
+  shell: wp core install --allow-root --path="{{ webroot }}/{{ site_url }}/public" --url="http://{{site_url}}" --title='{{site_url}}' --admin_user="{{ wp_email.split('@')[0] }}" --admin_email="{{wp_email}}" --admin_password="{{wp_pass}}"
 
 - name: Install Plugins
   when: use_wp == 'yes' and system_ready
-  shell: wp plugin install {{ item }} --allow-root --path={{ webroot }}/{{ site_url }}/public && wp plugin activate {{item}} --allow-root --path={{ webroot }}/{{ site_url }}/public
+  shell: "wp plugin install {{ item }} --allow-root --path={{ webroot }}/{{ site_url }}/public && wp plugin activate {{item}} --allow-root --path={{ webroot }}/{{ site_url }}/public"
   with_items:
   - nginx-helper
   - redis-cache
   - mailgun
+  - wordpress-seo
 
 - name: Update Permissions
   when: use_wp == 'yes'
-  command: chown -R {{sysgroup}}:{{sysgroup}} {{ webroot }}/{{ site_url }}/public
+  command: "chown -R {{sysgroup}}:{{sysgroup}} {{ webroot }}/{{ site_url }}/public"
 
 - name: Add WP Config Defines
   when: use_wp == 'yes' and system_ready
-  lineinfile: dest="{{ webroot }}/{{ site_url }}/public/wp-config.php"
-    regexp="\<\?php"
-    insertafter="^<?php"
-    line="<?php define('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/'); define('DISABLE_WP_CRON', true); define('WP_REDIS_DATABASE', {{redis_dbnum.stdout}}); define('WP_REDIS_PASSWORD', '{{redis_pass}}');"
+  blockinfile:
+    dest: "{{ webroot }}/{{ site_url }}/public/wp-config.php"
+    insertafter: "<\\?php"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK CONFIG"
+    content: |
+      define('DISABLE_WP_CRON', true);
+      define('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/');
+      define('WP_REDIS_DATABASE', {{redis_dbnum.stdout}});
+      define('WP_REDIS_PASSWORD', '{{redis_pass}}');
+
+
+- name: Add WP Mandrill Defines
+  when: use_wp == 'yes' and system_ready and use_mailgun == 'yes' and mailgun_domain.json.sending_dns_records is defined
+  blockinfile:
+    dest: "{{ webroot }}/{{ site_url }}/public/wp-config.php"
+    insertafter: "<\\?php"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK MANDRILL"
+    content: |
+      define('MAILGUN_USEAPI', true);
+      define('MAILGUN_APIKEY', '{{ mailgun_api_key }}');
+      define('MAILGUN_DOMAIN', '{{ site_url }}');
+      define('MAILGUN_USERNAME', '{{mailgun_domain.json.domain.smtp_login }}');
+      define('MAILGUN_PASSWORD', '{{mailgun_domain.json.domain.smtp_password }}');
+
+
+

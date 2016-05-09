@@ -3,17 +3,14 @@
   hosts: all
 
   # remote_user: user
-  sudo: yes
+  become: yes
+  become_method: sudo
 
   vars_prompt:
-    - name: sysgroup
-      prompt: "System Group and User (same name)"
-      private: no
-      default: "google"
-    - name: sysuser
-      prompt: "System User"
-      private: no
-      default: "google"
+    #- name: sysgroup
+    #  prompt: "System Group and User (same name)"
+    #  private: no
+    #  default: "google"
     - name: site_url
       prompt: "Website URL"
       default: google.com
@@ -26,20 +23,16 @@
       prompt: "Use WordPress?"
       default: "yes/no"
       private: no
-    #- name: install-plugins
-    #  prompt: "Install Plugins?"
-    #  default: "yes/no"
-    #  private: no
-    - name: wp_user
-      prompt: "WP Username"
-      default: "admin_google"
-      private: no
     - name: wp_email
-      prompt: "WP Email Address"
+      prompt: "WP Email Address (username will be split('@')[0] )"
       default: "user@email.com"
       private: no
     - name: wp_pass
       prompt: "WP Password"
+    - name: use_mailgun
+      prompt: "Use Mailgun?"
+      default: "yes/no"
+      private: no
 
 
 
@@ -48,5 +41,6 @@
     - { role: site-nginx,   tags: ['site-nginx'] }
     - { role: site-phpfpm,  tags: ['site-phpfpm'] }
     - { role: site-mysql,   tags: ['site-mysql'] }
+    - { role: site-mailgun, tags: ['site-mailgun'] }
     - { role: site-wp,      tags: ['site-wp'] }
-    #- { role: wp-plugins,   tags: ['wp-plugins'] }
+    - { role: debug,        tags: ['debug'] }

@@ -9,6 +9,9 @@
 # System
 hostname: hostyname
 
+# Directory that this playbook (newsite.yml) resides in
+playbookroot: /root/uwp-masterguide-ansible/ansible
+
 # Nginx
 webroot: /var/www   # no trailing slash
 site_dirs:
@@ -18,20 +21,25 @@ site_dirs:
   - public
   - cache
 
+# A5shley Tasks
+tasks_dir: /.tasks
+tasks_cron: true
+tasks_backups: true
+tasks_permissions: true
+tasks_checksums: true
+
 # MySQL
 mysql_root_user: root
 mysql_root_pass: mypass
-
-# New Relic
-newrelic_lic_key: 1234567890abcdefghijklmnopqrstuvwxyz
 
 # Redis Password
 redis_pass: 1234567890abcdefghijklmnopqrstuvwxyz
 redis_bind: 127.0.0.1
 redis_port: 6379
 
-# A5shley Tasks
-tasks_cron: true
-tasks_backups: true
-tasks_permissions: true
-tasks_checksums: true
+# New Relic
+newrelic_lic_key: 1234567890abcdefghijklmnopqrstuvwxyz
+
+# Mailgun (key is Private Key)
+mailgun_api_base: https://api.mailgun.net/v3
+mailgun_api_key: key-1234567890abcdefghijklmnopqrstuv

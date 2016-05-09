@@ -6,12 +6,12 @@
   tags: install
 
 - name: Relocate Tasks Folder
-  command: mv /tasks/.tasks {{ tasks_dir }}.tasks
+  command: mv /tmp/tasks/.tasks {{ tasks_dir }}
   when: tasks_clone
   tags: install
 
 - name: Cleanup Files
-  file: path=/tasks state=absent
+  file: path=/tmp/tasks state=absent
 
 - name: Enable Cron Task
   when: tasks_cron
@@ -19,7 +19,7 @@
         minute="*/5" hour="*"
         user=root
         cron_file={{ tasks_file }}
-        job="cd {{ tasks_dir }}.tasks; bash cron.sh > /dev/null 2>&1"
+        job="cd {{ tasks_dir }}; bash cron.sh > /dev/null 2>&1"
 
 - name: Enable Backup Task
   when: tasks_backups
@@ -27,7 +27,7 @@
         minute="0" hour="3"
         user=root
         cron_file={{ tasks_file }}
-        job="cd {{ tasks_dir }}.tasks; bash backups.sh > /dev/null 2>&1"
+        job="cd {{ tasks_dir }}; bash backups.sh > /dev/null 2>&1"
 
 - name: Enable Permissions Task
   when: tasks_permissions
@@ -35,7 +35,7 @@
         minute="0" hour="4"
         user=root
         cron_file={{ tasks_file }}
-        job="cd {{ tasks_dir }}.tasks; bash permissions.sh > /dev/null 2>&1"
+        job="cd {{ tasks_dir }}; bash permissions.sh > /dev/null 2>&1"
 
 - name: Enable Checksums Task
   when: tasks_checksums
@@ -43,5 +43,5 @@
         minute="0" hour="5"
         user=root
         cron_file={{ tasks_file }}
-        job="cd {{ tasks_dir }}.tasks; bash checksums.sh > /dev/null 2>&1"
+        job="cd {{ tasks_dir }}; bash checksums.sh > /dev/null 2>&1"
 

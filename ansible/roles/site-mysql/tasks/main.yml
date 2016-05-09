@@ -15,9 +15,6 @@
 #  when: ansible_config_present.stat.exists == True
 #  register: rconfig
 
-#- debug: msg="remote config file {{ (rconfig.stdout | from_json) }}"
-#  when: (rconfig.stdout | from_json).testiclee is not defined
-
 - set_fact: db_name={{ site_url | regex_replace('\..*$', '') | regex_replace('[^a-zA-Z0-9]', '_') | lower | truncate(12, True, '') }}
   when: use_db == 'yes'
 
@@ -27,12 +24,12 @@
 - set_fact: db_name={{ db_name }}_wp
   when: use_wp == 'yes'
 
+- debug: var=mysql_root_user
+- debug: var=mysql_root_pass
+
 - name: Create Database
   when: use_db == 'yes'
-  mysql_db: name={{ db_name }}
-            state=present
-            login_user={{ mysql_root_user }}
-            login_password={{ mysql_root_pass }}
+  mysql_db: name={{ db_name }} state=present login_user={{ mysql_root_user }} login_password={{ mysql_root_pass }}
 
 - name: Create password
   when: use_db == 'yes'
