@@ -1,7 +1,7 @@
 # a5shley-tasks tasks :: Main cron task setup
 ---
 - name: Install WP Tasks
-  git: repo=https://github.com/A5hleyRich/simple-automated-tasks.git dest={{ tasks_dir }}
+  git: repo=https://github.com/emcniece/simple-automated-tasks.git dest={{ tasks_dir }}
   register: tasks_clone
   tags: install
 
