@@ -20,8 +20,10 @@
 - name: Create Directory Structure
   when: site_url != ''
   file: path="{{ webroot }}/{{ site_url }}/{{ item }}"
-        state=directory mode=0755
-        group="{{ sysgroup }} owner={{ sysgroup }}"
+        state=directory
+        mode=0755
+        group="{{ sysgroup }}"
+        owner="{{ sysgroup }}"
   with_items: site_dirs
 
 - name: Download WordPress
@@ -62,14 +64,19 @@
 
 - name: Update Permissions
   when: use_wp == 'yes'
-  command: "chown -R {{sysgroup}}:{{sysgroup}} {{ webroot }}/{{ site_url }}/public"
+  #command: "chown -R {{sysgroup}}:{{sysgroup}} {{ webroot }}/{{ site_url }}/public"
+  file: path="{{ webroot }}/{{ site_url }}/public"
+        state=directory
+        group="{{ sysgroup }}"
+        owner="{{ sysgroup }}"
+
 
 - name: Add WP Config Defines
   when: use_wp == 'yes' and system_ready
   blockinfile:
     dest: "{{ webroot }}/{{ site_url }}/public/wp-config.php"
     insertafter: "<\\?php"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK CONFIG"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: CONFIG"
     content: |
       define('DISABLE_WP_CRON', true);
       define('RT_WP_NGINX_HELPER_CACHE_PATH', '{{ webroot }}/{{ site_url }}/cache/');
@@ -82,7 +89,7 @@
   blockinfile:
     dest: "{{ webroot }}/{{ site_url }}/public/wp-config.php"
     insertafter: "<\\?php"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK MANDRILL"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: MANDRILL"
     content: |
       define('MAILGUN_USEAPI', true);
       define('MAILGUN_APIKEY', '{{ mailgun_api_key }}');

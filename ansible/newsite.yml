@@ -37,7 +37,7 @@
 
 
   roles:
-    - { role: site-common,  tags: ['site-common'] }
+    - { role: site-common,  tags: ['site-common', 'site-wp'] }
     - { role: site-nginx,   tags: ['site-nginx'] }
     - { role: site-phpfpm,  tags: ['site-phpfpm'] }
     - { role: site-mysql,   tags: ['site-mysql'] }
