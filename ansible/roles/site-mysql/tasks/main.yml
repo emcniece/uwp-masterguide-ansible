@@ -6,30 +6,22 @@
  # on remote host to store db vars between tasks
 ###
 
-#- name: Detect Config File
-#  stat: path="{{ webroot }}/{{ site_url }}/ansible_vars.json"
-#  register: ansible_config_present
-
-#- name: Read Config File
-#  command: "cat {{ webroot }}/{{ site_url }}/ansible_vars.json"
-#  when: ansible_config_present.stat.exists == True
-#  register: rconfig
-
-- set_fact: db_name={{ site_url | regex_replace('\..*$', '') | regex_replace('[^a-zA-Z0-9]', '_') | lower | truncate(12, True, '') }}
+- set_fact: db_name="{{ site_url | regex_replace('\..*$', '') | regex_replace('[^a-zA-Z0-9]', '_') | lower | truncate(12, True, '') }}"
   when: use_db == 'yes'
 
-- set_fact: db_name={{ db_name }}
+- set_fact: db_name="{{ db_name }}"
   when: use_db == 'yes' and use_wp == 'no'
 
-- set_fact: db_name={{ db_name }}_wp
+- set_fact: db_name="{{ db_name }}_wp"
   when: use_wp == 'yes'
-
-- debug: var=mysql_root_user
-- debug: var=mysql_root_pass
 
 - name: Create Database
   when: use_db == 'yes'
-  mysql_db: name={{ db_name }} state=present login_user={{ mysql_root_user }} login_password={{ mysql_root_pass }}
+  mysql_db:
+    name="{{ db_name }}"
+    state=present
+    login_user="{{ mysql_root_user }}"
+    login_password="{{ mysql_root_pass }}"
 
 - name: Create password
   when: use_db == 'yes'
@@ -46,9 +38,13 @@
 
 - name: Create User
   when: use_db == 'yes'
-  mysql_user: name={{ db_name }} password={{ db_pass.stdout }}
-              priv=*.*:ALL state=present
-              login_user={{ mysql_root_user }} login_password={{ mysql_root_pass }}
+  mysql_user:
+    name="{{ db_name }}"
+    password="{{ db_pass.stdout }}"
+    priv=*.*:ALL
+    state=present
+    login_user="{{ mysql_root_user }}" 
+    login_password="{{ mysql_root_pass }}"
 
 
 - debug: msg="DB Username - {{db_name}}"
