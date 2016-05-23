@@ -65,11 +65,12 @@
 - name: Update Permissions
   when: use_wp == 'yes'
   #command: "chown -R {{sysgroup}}:{{sysgroup}} {{ webroot }}/{{ site_url }}/public"
-  file: path="{{ webroot }}/{{ site_url }}/public"
-        state=directory
-        group="{{ sysgroup }}"
-        owner="{{ sysgroup }}"
-
+  file:
+    path="{{ webroot }}/{{ site_url }}/public"
+    state=directory
+    group="{{ sysgroup }}"
+    owner="{{ sysgroup }}"
+    recurse=yes
 
 - name: Add WP Config Defines
   when: use_wp == 'yes' and system_ready
