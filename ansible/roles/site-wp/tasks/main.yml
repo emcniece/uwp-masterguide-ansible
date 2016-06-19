@@ -3,6 +3,7 @@
 
 # Get next Redis db number
 - name: Get Redis DB number
+  when: use_wp == 'yes'
   shell: bash redis_db_num.sh
   args:
     chdir: "{{ playbookroot }}"
@@ -17,14 +18,14 @@
   stat: path="{{ webroot }}/{{ site_url }}/public/wp-config.php"
   register: wp_configured
 
-- name: Create Directory Structure
-  when: site_url != ''
-  file: path="{{ webroot }}/{{ site_url }}/{{ item }}"
-        state=directory
-        mode=0755
-        group="{{ sysgroup }}"
-        owner="{{ sysgroup }}"
-  with_items: site_dirs
+#- name: Create Directory Structure
+#  when: site_url != ''
+#  file: path="{{ webroot }}/{{ site_url }}/{{ item }}"
+#        state=directory
+#        mode=0755
+#        group="{{ sysgroup }}"
+#        owner="{{ sysgroup }}"
+#  with_items: site_dirs
 
 - name: Download WordPress
   when: use_wp == 'yes' and wp_present.stat.exists == False
@@ -38,10 +39,12 @@
   set_fact: system_ready=true
 
 - name: Read DB User
+  when: use_wp == 'yes'
   command: "cat {{ webroot }}/{{ site_url }}/ansible_db_user.json"
   register: db_user
 
 - name: Read DB Pass
+  when: use_wp == 'yes'
   command: "cat {{ webroot }}/{{ site_url }}/ansible_db_pass.json"
   register: db_pass
 
