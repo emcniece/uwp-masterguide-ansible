@@ -3,12 +3,12 @@
 
 # Get next Redis db number
 - name: Get Redis DB number
+  when: use_wp == 'yes'
   shell: bash redis_db_num.sh
   args:
     chdir: "{{ playbookroot }}"
     executable: /bin/bash
   register: redis_dbnum
-  when: use_wp == 'yes'
 
 - name: Is WordPress downloaded?
   stat: path="{{ webroot }}/{{ site_url }}/public/index.php"
@@ -19,16 +19,6 @@
   stat: path="{{ webroot }}/{{ site_url }}/public/wp-config.php"
   register: wp_configured
   when: use_wp == 'yes'
-
-# Already handled in site-nginx, right?
-#- name: Create Directory Structure
-#  when: site_url != ''
-#  file: path="{{ webroot }}/{{ site_url }}/{{ item }}"
-#        state=directory
-#        mode=0755
-#        group="{{ sysgroup }}"
-#        owner="{{ sysgroup }}"
-#  with_items: site_dirs
 
 - name: Download WordPress
   when: use_wp == 'yes' and wp_present.stat.exists == False
