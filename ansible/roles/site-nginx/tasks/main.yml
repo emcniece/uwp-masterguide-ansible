@@ -6,8 +6,9 @@
   when: site_url != ''
   file: path="{{ webroot }}/{{ site_url }}/{{ item }}"
         state=directory mode=0755
-        group="{{ sysgroup }}" owner="{{ sysgroup }}"
-  with_items: site_dirs
+        group="{{ sysgroup }}"
+        owner="{{ sysgroup }}"
+  with_items: '{{site_dirs}}'
 
 - name: Copy Nginx Site Configuration
   when: use_wp != 'yes'

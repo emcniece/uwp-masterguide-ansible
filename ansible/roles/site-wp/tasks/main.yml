@@ -8,23 +8,27 @@
     chdir: "{{ playbookroot }}"
     executable: /bin/bash
   register: redis_dbnum
+  when: use_wp == 'yes'
 
 - name: Is WordPress downloaded?
   stat: path="{{ webroot }}/{{ site_url }}/public/index.php"
   register: wp_present
+  when: use_wp == 'yes'
 
 - name: WordPress Configured
   stat: path="{{ webroot }}/{{ site_url }}/public/wp-config.php"
   register: wp_configured
+  when: use_wp == 'yes'
 
-- name: Create Directory Structure
-  when: site_url != ''
-  file: path="{{ webroot }}/{{ site_url }}/{{ item }}"
-        state=directory
-        mode=0755
-        group="{{ sysgroup }}"
-        owner="{{ sysgroup }}"
-  with_items: site_dirs
+# Already handled in site-nginx, right?
+#- name: Create Directory Structure
+#  when: site_url != ''
+#  file: path="{{ webroot }}/{{ site_url }}/{{ item }}"
+#        state=directory
+#        mode=0755
+#        group="{{ sysgroup }}"
+#        owner="{{ sysgroup }}"
+#  with_items: site_dirs
 
 - name: Download WordPress
   when: use_wp == 'yes' and wp_present.stat.exists == False
@@ -38,10 +42,12 @@
   set_fact: system_ready=true
 
 - name: Read DB User
+  when: use_wp == 'yes'
   command: "cat {{ webroot }}/{{ site_url }}/ansible_db_user.json"
   register: db_user
 
 - name: Read DB Pass
+  when: use_wp == 'yes'
   command: "cat {{ webroot }}/{{ site_url }}/ansible_db_pass.json"
   register: db_pass
 
